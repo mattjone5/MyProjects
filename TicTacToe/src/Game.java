@@ -8,9 +8,14 @@ import java.util.Random;
  * the best, but it works for now. This class has all the methods to make the game work and run. The only issue
  * that this code has right now is when someone wins or there are no more valid moves, it will just restart and not
  * alert the user that someone has won or the game ended in a draw.
+ * <br><br>
+ * 1.0.1 Update
+ * <br>
+ * The checkForWin method has been updated to work a bit better. Please see the documentation for the update. As
+ * well, the way that the game flows has been changed, please see the actionPerformed method in the main method.
  *
  * @author mattjone5
- * @version 1.0.0
+ * @version 1.0.1
  * @since 3/12/22
  */
 public class Game {
@@ -53,52 +58,37 @@ public class Game {
     }
 
     /**
-     * This is to see if someone has won the game. I don't really like how I have it set up since it feels really
-     * inefficient, but it works for now. This will run a for loop twice, first to check if the 'X' has a win, then to
-     * check if the 'O' has a win. If a matching pair is found (An if/else-if returns true) then, it will flip the
-     * variable isWin to true and will not reset the curCheck variable. If no one has won, then the variable curCheck
-     * will be set to "". This will return whoever the winner is as a String, but if no one has won, then it'll return
-     * a ""
+     * This is to see if someone has won the game. I was able to make it a bit better in this version since I got rid
+     * of the for loop and instead just pass in which player I want to see who wins. This will run a through the if
+     * else-if branch and check to see if there is a matching pair. If a matching pair is found (An if/else-if returns
+     * true) then, it will flip the variable isWin to true. If no one has won, then the variable isWin will just stay
+     * false. This will return true if the check player has won the game, and false if the check player hasn't won the
+     * game.
      *
      * @param board A JButton 2D array that represents the board
-     * @return "X" if the X's won the game, "O" if the O's won the game, "" if no one was won
+     * @param check A String that is who we want to see who might have a win.
+     * @return true is there was a win for the check player, false otherwise
      */
-    private static String checkForWin(JButton[][] board){
-        String curCheck = "X"; // This is to see who are trying to find a win for
+    private static boolean checkForWin(JButton[][] board, String check){
         boolean isWin = false;
-        for(int i = 0; i < 2; i++){
-            if (board[0][0].getText().equals(curCheck) && board[0][1].getText().equals(curCheck) && board[0][2].getText().equals(curCheck)){
+            if (board[0][0].getText().equals(check) && board[0][1].getText().equals(check) && board[0][2].getText().equals(check)){
                 isWin = true;
-                break;
-            } else if (board[1][0].getText().equals(curCheck) && board[1][1].getText().equals(curCheck) && board[1][2].getText().equals(curCheck)) {
+            } else if (board[1][0].getText().equals(check) && board[1][1].getText().equals(check) && board[1][2].getText().equals(check)) {
                 isWin = true;
-                break;
-            } else if (board[2][0].getText().equals(curCheck) && board[2][1].getText().equals(curCheck) && board[2][2].getText().equals(curCheck)) {
+            } else if (board[2][0].getText().equals(check) && board[2][1].getText().equals(check) && board[2][2].getText().equals(check)) {
                 isWin = true;
-                break;
-            } else if (board[0][0].getText().equals(curCheck) && board[1][0].getText().equals(curCheck) && board[2][0].getText().equals(curCheck)) {
+            } else if (board[0][0].getText().equals(check) && board[1][0].getText().equals(check) && board[2][0].getText().equals(check)) {
                 isWin = true;
-                break;
-            } else if (board[0][1].getText().equals(curCheck) && board[1][1].getText().equals(curCheck) && board[2][1].getText().equals(curCheck)) {
+            } else if (board[0][1].getText().equals(check) && board[1][1].getText().equals(check) && board[2][1].getText().equals(check)) {
                 isWin = true;
-                break;
-            } else if (board[0][2].getText().equals(curCheck) && board[1][2].getText().equals(curCheck) && board[2][2].getText().equals(curCheck)) {
+            } else if (board[0][2].getText().equals(check) && board[1][2].getText().equals(check) && board[2][2].getText().equals(check)) {
                 isWin = true;
-                break;
-            } else if(board[0][0].getText().equals(curCheck) && board[1][1].getText().equals(curCheck) && board[2][2].getText().equals(curCheck)) {
+            } else if(board[0][0].getText().equals(check) && board[1][1].getText().equals(check) && board[2][2].getText().equals(check)) {
                 isWin = true;
-                break;
-            } else if (board[0][2].getText().equals(curCheck) && board[1][1].getText().equals(curCheck) && board[2][0].getText().equals(curCheck)) {
+            } else if (board[0][2].getText().equals(check) && board[1][1].getText().equals(check) && board[2][0].getText().equals(check)) {
                 isWin = true;
-                break;
-            } else{
-                curCheck = "O"; // This runs if the X's didn't win
             }
-        }
-        if(!isWin){
-            curCheck = ""; // We need to make sure that we set curCheck to "" if no one won, thus why this is here
-        }
-        return curCheck;
+        return isWin;
     }
 
     /**
@@ -148,40 +138,22 @@ public class Game {
                         JButton button = (JButton) e.getSource();
                         button.setText("X");
                         button.setEnabled(false);
-                        switch (checkForWin(buttons)) {
-                            case "X" -> {
-                                winMsg.setText("You Win!");
-                                winMsg.setVisible(true);
-                                pScore[0]++;
-                                userScore.setText(String.format("User Score: %d", pScore[0]));
-                                hasChecked = true;
-                            }
-                            case "O" -> {
+                        if(checkForWin(buttons, "X")){
+                            winMsg.setText("You Win!");
+                            winMsg.setVisible(true);
+                            pScore[0]++;
+                            userScore.setText(String.format("User Score: %d", pScore[0]));
+                            hasChecked = true;
+                        }
+                        // I want to make sure that the computer doesn't move if the play won the game
+                        // I was able to move this in here because of how the checkForWin method now works
+                        if(!hasChecked){
+                            computerMove(buttons);
+                            if(checkForWin(buttons, "O")){
                                 winMsg.setText("You Lose!");
                                 winMsg.setVisible(true);
                                 cScore[0]++;
                                 comScore.setText(String.format("Computer Score: %d", cScore[0]));
-                                hasChecked = true;
-                            }
-                        }
-                        // I want to make sure that the computer doesn't move if the play won the game
-                        if(checkForWin(buttons).equals("")){
-                            computerMove(buttons);
-                        }
-                        if(!hasChecked){
-                            switch (checkForWin(buttons)) {
-                                case "X" -> {
-                                    winMsg.setText("You Win!");
-                                    winMsg.setVisible(true);
-                                    pScore[0]++;
-                                    userScore.setText(String.format("User Score: %d", pScore[0]));
-                                }
-                                case "O" -> {
-                                    winMsg.setText("You Lose!");
-                                    winMsg.setVisible(true);
-                                    cScore[0]++;
-                                    comScore.setText(String.format("Computer Score: %d", cScore[0]));
-                                }
                             }
                         }
                         if(winMsg.isVisible() || !isThereValidMove(buttons)){
